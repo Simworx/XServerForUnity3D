@@ -16,6 +16,8 @@ namespace XServer
         public HttpRequest Request { get; protected set; }
         public string RespCode { get; set; }
 
+        
+
         string file = "";
         string body = "";
         Stream stream;

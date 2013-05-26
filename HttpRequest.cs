@@ -24,7 +24,7 @@ namespace XServer
 
         public string RemoteIp { get; private set; }
 
-        
+        public QueryString QueryString { get; set; }
 
         protected HttpRequest()
         {
@@ -75,6 +75,8 @@ namespace XServer
                 }
 
                 Uri ur = new Uri("http://localhost" + hS[1]);
+
+                request.QueryString = new QueryString(ur.Query);
                 //Console.WriteLine("URI: "+ur.LocalPath);
 
 
