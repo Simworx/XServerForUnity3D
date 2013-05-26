@@ -14,11 +14,12 @@ namespace XServer
         {
             Entries = new Dictionary<string, string>();
 
+            if(s.Length >= 1)
             if (s[0] == '?')
             {
                 s = s.Remove(0, 1);
 
-                var combos = s.Split(new char[] { '&' }, StringSplitOptions.RemoveEmptyEntries);
+                var combos = s.Split(new char[] { '&' }, StringSplitOptions.None);
 
                 foreach (var c in combos)
                 {
@@ -31,7 +32,9 @@ namespace XServer
                         f = str[0];
 
                     if (str.Length == 2)
-                        f = str[1];
+                        f2 = str[1];
+
+                    Entries[f] = f2;
 
                 }
             }
