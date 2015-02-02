@@ -2,11 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace XServer
 {
-    public class Controller
+    public abstract class Controller
     {
         public string Route { get; private set; }
         public bool ExactMatch { get; private set; }
@@ -17,12 +16,7 @@ namespace XServer
             this.ExactMatch = exact;
         }
 
-        public virtual int OnConnection(HttpRequest request, HttpResponse response)
-        {
-
-
-            return 200;
-        }
+        public abstract int OnConnection(HttpRequest request, HttpResponse response);
 
         
     }

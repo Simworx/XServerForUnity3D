@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace XServer
 {
@@ -17,7 +16,7 @@ namespace XServer
         public override int OnConnection(HttpRequest request, HttpResponse response)
         {
             response.SetBody("Hello World");
-            return base.OnConnection(request, response);
+            return 200;
         }
 
     }

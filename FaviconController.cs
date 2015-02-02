@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace XServer
 {
@@ -18,7 +17,7 @@ namespace XServer
         {
             response.SetFile(@"favicon.png");
 
-            return base.OnConnection(request, response);
+            return 200;
         }
     }
 }

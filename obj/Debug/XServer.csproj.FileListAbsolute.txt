@@ -1,7 +1,0 @@
-X:\Coding\Visual C#\TdxF\XServer\bin\Debug\XServer.dll
-X:\Coding\Visual C#\TdxF\XServer\bin\Debug\XServer.pdb
-X:\Coding\Visual C#\TdxF\XServer\obj\Debug\XServer.dll
-X:\Coding\Visual C#\TdxF\XServer\obj\Debug\XServer.pdb
-X:\Coding\Visual C#\TdxF\XServer\obj\Debug\XServer.csprojResolveAssemblyReference.cache
-X:\Coding\Visual C#\TdxF\XServer\bin\Debug\TdxF.dll
-X:\Coding\Visual C#\TdxF\XServer\bin\Debug\TdxF.pdb
