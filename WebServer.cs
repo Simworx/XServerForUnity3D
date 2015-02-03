@@ -12,12 +12,11 @@ namespace XServer
     public class WebServer
     {
         public int Port { get; private set; }
-        public bool Running { get; private set; }
-
-        TcpListener listener;
-        Thread listeningThread;
-
+        public bool IsRunning { get; private set; }
         public Dictionary<string, Controller> Controllers { get; protected set; }
+
+        TcpListener _tcpListener;
+        Thread _listeningThread;        
 
         public WebServer(int port)
         {
@@ -26,23 +25,13 @@ namespace XServer
 
             Renderer.TemplateDirectory = Directory.GetCurrentDirectory() + "\\templates\\";
 
-            Controllers = new Dictionary<string, Controller>();
-            
+            Controllers = new Dictionary<string, Controller>();            
 
             this.RegisterController(new NotFoundController());
             this.RegisterController(new FaviconController());
             this.RegisterController(new DefaultController());
 
             this.Port = port;
-
-            listener = new TcpListener(IPAddress.Any,port);
-            OnConnectionReceived += WebServer_OnConnectionReceived;
-            
-        }
-
-        void WebServer_OnConnectionReceived(TcpClient client,HttpRequest request)
-        {
-            
         }
 
         public void RegisterController(Controller ctrl)
@@ -52,38 +41,66 @@ namespace XServer
 
         public void Start()
         {
-            Running = true;
-            listener.Start();
+            IsRunning = true;
+            _listeningThread = new Thread(new ThreadStart(Listening));
+            _listeningThread.Start();
+        }
 
-
-            listeningThread = new Thread(new ThreadStart(Listening));
-            listeningThread.Start();
+        public void Stop()
+        {
+            if (_listeningThread != null)
+            {
+                IsRunning = false;
+                _listeningThread.Join(500);
+                _listeningThread = null;
+            }
         }
 
         void Listening()
         {
-            while (Running)
+            try
             {
-                var client = listener.AcceptTcpClient();
+                _tcpListener = new TcpListener(IPAddress.Any,Port);
+                _tcpListener.Start();
 
-                new Thread(new ThreadStart(delegate()
+                while (IsRunning)
                 {
-                    ProcessConnection(client);
+                    // check if new connections are pending, if not, be nice and sleep 100ms
+                    if (!_tcpListener.Pending())
+                    {
+                        Thread.Sleep(100);
+                    }
+                    else
+                    {
+                        var client = _tcpListener.AcceptTcpClient();
 
-                })).Start();
+                        new Thread(new ThreadStart(delegate()
+                        {
+                            ProcessConnection(client);
 
+                        })).Start();
+                    }
+
+                }
             }
+            catch (ThreadAbortException)
+            {
+                
+            }
+            finally
+            {
+                IsRunning = false;
+                _tcpListener.Stop();                
+            }            
         }
 
         void ProcessConnection(TcpClient client)
         {
             HttpRequest request = HttpRequest.Parse(client.Client,client.GetStream());
 
-            
-
             if (request != null)
             {
-                Logger.Log(request.Method + " " + request.Url,request);
+                //Logger.Log(request.Method + " " + request.Url,request);
 
                 Controller ctrlr = Controllers["404"];
 
@@ -118,7 +135,6 @@ namespace XServer
                         {
                             dff.Add(Compute(rUrl, ctrl.Route));
                             rt.Add(dff[dff.Count - 1], ctrl);
-                            
                         }
 
                         dff.Sort();
@@ -131,10 +147,6 @@ namespace XServer
                         ctrlr = matchedCtrl[0];
                     }
                 }
-
-                Console.WriteLine("Route: "+ctrlr.Route);
-
-                //OnConnectionReceived(client, request);
 
                 var response = request.CreateRepsonse();
 
@@ -153,9 +165,6 @@ namespace XServer
                 {
                     Logger.LogWarning(ex.ToString());
                 }
-
-                
-
 
                 if (response.RespCode == "UNKNOWN")
                     response.SetCode(code);
@@ -201,9 +210,5 @@ namespace XServer
             }
             return d[n, m];
         }
-
-        public delegate void ConnectionReceivedHandler(TcpClient client, HttpRequest request);
-        public event ConnectionReceivedHandler OnConnectionReceived;
-
     }
 }
