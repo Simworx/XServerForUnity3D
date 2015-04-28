@@ -25,14 +25,23 @@ bld/
 [Bb]in/
 [Oo]bj/
 
+<<<<<<< HEAD
+# Visual Studo 2015 cache/options directory
+.vs/
+=======
 # Roslyn cache directories
 *.ide/
+>>>>>>> e19152cf5b217d896092c35fa0c7e8aaae443990
 
 # MSTest test Results
 [Tt]est[Rr]esult*/
 [Bb]uild[Ll]og.*
 
+<<<<<<< HEAD
+# NUNIT
+=======
 #NUNIT
+>>>>>>> e19152cf5b217d896092c35fa0c7e8aaae443990
 *.VisualState.xml
 TestResult.xml
 
@@ -200,3 +209,4 @@ FakesAssemblies/
 
 # XServer specifics
 XServer.TestApp/
+
