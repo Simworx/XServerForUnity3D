@@ -16,7 +16,7 @@ namespace XServer
             this.ExactMatch = exact;
         }
 
-        public abstract int OnConnection(HttpRequest request, HttpResponse response);
+        public abstract void OnConnection(HttpRequest request, HttpResponse response);
 
         
     }

@@ -30,15 +30,15 @@ namespace XServer
 
             Controllers = new Dictionary<string, Controller>();            
 
-            this.RegisterController(new NotFoundController());
-            this.RegisterController(new FaviconController());
-            this.RegisterController(new DefaultController());
-
             this.Port = port;
         }
 
         public void RegisterController(Controller ctrl)
         {
+            if (Controllers.ContainsKey(ctrl.Route))
+            {
+                throw new ArgumentException("The route '" + ctrl.Route  + "' has already been defined. This operation would overwrite it.");
+            }
             Controllers[ctrl.Route] =  ctrl;
         }
 
@@ -99,21 +99,22 @@ namespace XServer
 
         void ProcessConnection(TcpClient client)
         {
+            
             HttpRequest request = HttpRequest.Parse(client.Client,client.GetStream());
 
             if (request != null)
             {
                 //Logger.Log(request.Method + " " + request.Url,request);
 
-                Controller ctrlr = Controllers["404"];
+                Controller ctrlr = null;
 
-                string rUrl = request.Url.LocalPath.Remove(0, 1);
+                string rUrl = request.Url.LocalPath;
 
                 if (Controllers.ContainsKey(rUrl))
                 {
                     ctrlr = Controllers[rUrl];
                 }
-                else if(Controllers.ContainsKey(rUrl.Remove(rUrl.Length-1,1)))
+                else if (rUrl.EndsWith("/") && Controllers.ContainsKey(rUrl.Remove(rUrl.Length - 1, 1)))
                 {
                     ctrlr = Controllers[rUrl.Remove(rUrl.Length-1,1)];
                 }
@@ -150,31 +151,38 @@ namespace XServer
                         ctrlr = matchedCtrl[0];
                     }
                 }
-
+                
                 var response = request.CreateRepsonse();
                 response.AllowGzipCompression = _allowGzipCompression;
 
-                int code = 500;
-
-                try
+                if (ctrlr == null)
                 {
-                    code = ctrlr.OnConnection(request, response);
-
+                    response.SetBody(Http.GetFullCode(404), 404);
                 }
-                catch (UnauthorizedAccessException ex)
+                else
                 {
-                    response.SetCode(403);
-                }
-                catch (Exception ex)
-                {
-                    //Logger.LogWarning(ex.ToString());
-                }
+                    try
+                    {
+                        ctrlr.OnConnection(request, response);
+                    }
+                    catch (UnauthorizedAccessException ex)
+                    {
+                        response.SetBody("Unauthorized Access Error: " + ex.ToString(), 403);
+                    }
+                    catch (Exception ex)
+                    {
+                        //Logger.LogWarning();
+                        response.SetBody("Internal Server Error: " + ex.ToString(), 500);
+                    }
 
-                if (response.RespCode == "UNKNOWN")
-                    response.SetCode(code);
+                    if (response.RespCode == "UNKNOWN")
+                    {
+                        response.SetBody("Internal error: Invalid or missing response code: " + ctrlr.GetType().Name);
+                        response.SetCode(500);
+                    }
+                }
 
                 response.Send();
-
             }
                 
         }

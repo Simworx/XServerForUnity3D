@@ -6,6 +6,29 @@ using System.Linq;
 
 public class XServerBehaviour : MonoBehaviour {
 
+    internal class RootController : XServer.Controller
+    {
+        readonly XServer.StaticFileController _sfc = null;
+        public RootController(XServer.StaticFileController sfc)
+            : base("/", true)
+        {
+            _sfc = sfc;
+        }
+
+        public override void OnConnection(XServer.HttpRequest request, XServer.HttpResponse response)
+        {
+            var contents = _sfc.ReadFile("index.html");
+            if (contents != null)
+            {
+                response.SetBody(contents);
+            }
+            else
+            {
+                response.SetCode(404);
+            }
+        }
+    }
+
 	/// <summary>
 	/// The webserver
 	/// </summary>
@@ -29,9 +52,13 @@ public class XServerBehaviour : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 
+        var sfc = new XServer.StaticFileController(_fileDirectories);
+        var rc = new RootController(sfc);
+
 		// start the server
 		XServer.WebServer ws = new XServer.WebServer(_port, false); //gzip causes trouble in Unity
-        ws.RegisterController(new XServer.StaticFileController(_fileDirectories));
+        ws.RegisterController(rc);
+        ws.RegisterController(sfc);
 		if (_deferredRegister != null) {
 			foreach (var c in _deferredRegister) {
 					ws.RegisterController (c);

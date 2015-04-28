@@ -103,7 +103,7 @@ namespace XServer
 
                 return request;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 //Logger.LogError("Error parsing package \n"+ex.Message+" \n "+ex.StackTrace);
                 

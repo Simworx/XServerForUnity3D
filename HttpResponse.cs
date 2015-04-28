@@ -52,9 +52,17 @@ namespace XServer
             this.ic = ic;
         }
 
-        public void SetBody(string body)
+        public void SetBody(string body, int? code = null)
         {
             this.body = body;
+            if (code.HasValue)
+            {
+                SetCode(code.Value);
+            }
+            else
+            {
+                SetCode(200);
+            }
         }
 
         public void SetFile(string file,bool partial = false)
@@ -76,9 +84,12 @@ namespace XServer
                 fStart = start;
                 fEnd = end;
 
-                RespCode = "206 Partial Content";
+                SetCode(206);
             }
-
+            else
+            {
+                SetCode(200);
+            }
         }
 
         /// <summary>
@@ -95,7 +106,7 @@ namespace XServer
             fStart = start;
             fEnd = end;
 
-            RespCode = "206 Partial Content";
+            SetCode(206);
         }
 
         public void Redirect(string url)
@@ -111,7 +122,7 @@ namespace XServer
 
         public void Send404Response()
         {
-            this.RespCode = "404 Not Found";
+            SetCode(404);
             this.Send();
         }
 
@@ -211,7 +222,7 @@ namespace XServer
                 if (fStart != -1)
                 {
                     start = fStart;
-                    RespCode = "206 Partial Content";
+                    SetCode(206);
                 }
 
 
@@ -241,7 +252,7 @@ namespace XServer
 
                 return end;
             }
-            else if (body != "")
+            else if (body != null && body != string.Empty)
             {
                 if (AllowGzipCompression && Request.Headers.ContainsKey("Accept-Encoding") && Request.Headers["Accept-Encoding"].Contains("gzip"))
                 {
@@ -283,7 +294,7 @@ namespace XServer
             {
                 stream.Close();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 //Logger.LogWarning(ex.Message);
             }

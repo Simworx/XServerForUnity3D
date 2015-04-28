@@ -14,24 +14,37 @@ namespace XServer
         public IEnumerable<string> Directories { get; private set; }
 
         public StaticFileController(string[] dirs)
-            : base("", false)
+            : base("/static/", false)
         {
             Directories = dirs.Select(d => d.Replace("{{CWD}}", Directory.GetCurrentDirectory())).Where(Directory.Exists);
         }
 
-        public override int OnConnection(XServer.HttpRequest request, XServer.HttpResponse response)
+        public string ReadFile(string fileName)
         {
-            var fileName = request.Url.LocalPath.TrimStart('/');
+            foreach (var dir in Directories)
+            {
+                var path = Path.Combine(dir, fileName);
+                if (File.Exists(path))
+                {
+                    return File.ReadAllText(path);
+                }
+            }
+            return null;
+        }
+
+        public override void OnConnection(XServer.HttpRequest request, XServer.HttpResponse response)
+        {
+            var fileName = request.Url.LocalPath.Replace(this.Route, "");
             foreach (var dir in Directories)
             {
                 var path = Path.Combine(dir, fileName);
                 if (File.Exists(path))
                 {
                     response.SetFile(path);
-                    return 200;
+                    return;
                 }
             }
-            return 404;
+            response.SetCode(404);
         }
     }
 }
