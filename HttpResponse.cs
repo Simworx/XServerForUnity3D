@@ -6,7 +6,6 @@ using System.IO.Compression;
 using System.Linq;
 using System.Net.Sockets;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace XServer
 {
@@ -244,10 +243,10 @@ namespace XServer
             }
             else if (body != "")
             {
-                if (Request.Headers.ContainsKey("Accept-Encoding") && Request.Headers["Accept-Encoding"].Contains("gzip"))
+                /*if (Request.Headers.ContainsKey("Accept-Encoding") && Request.Headers["Accept-Encoding"].Contains("gzip"))
                 {
                     Headers["Content-Encoding"] = "gzip";
-                }
+                }*/
 
                 
                 writeBuffer = Encoding.UTF8.GetBytes(body);
@@ -261,11 +260,11 @@ namespace XServer
         {
             try
             {
-                if (Headers.ContainsKey("Content-Encoding") && Headers["Content-Encoding"] == "gzip")
+                /*if (Headers.ContainsKey("Content-Encoding") && Headers["Content-Encoding"] == "gzip")
                 {
-                    stream = new GZipStream(stream, CompressionLevel.Fastest);
+                    stream = new GZipStream(stream);
                     
-                }
+                }*/
 
                     stream.Write(writeBuffer, 0, writeBuffer.Length);
                     stream.Flush();
