@@ -30,7 +30,7 @@ namespace XServer
             }
             else
             {
-                Logger.LogError("Can't find template " + templateName);
+                //Logger.LogError("Can't find template " + templateName);
             }
 
             return "";

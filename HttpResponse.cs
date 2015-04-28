@@ -14,6 +14,7 @@ namespace XServer
         public Dictionary<string, string> Headers { get; protected set; }
         public HttpRequest Request { get; protected set; }
         public string RespCode { get; set; }
+        public bool AllowGzipCompression { get; set; }
 
         string file = "";
         string body = "";
@@ -36,6 +37,7 @@ namespace XServer
             this.stream = request.Stream;
             this.Headers = new Dictionary<string, string>();
             this.RespCode = "UNKNOWN";
+            this.AllowGzipCompression = true;
 
             Headers.Add("Content-Type", "text/html");
         }
@@ -117,7 +119,7 @@ namespace XServer
         {
             if (closed)
             {
-                Logger.LogError("Sending already sent response",Request);
+                //Logger.LogError("Sending already sent response",Request);
                 return;
             }
 
@@ -192,7 +194,7 @@ namespace XServer
 
                 FileInfo fi = new FileInfo(file);
 
-                if (Request.Headers.ContainsKey("Accept-Encoding") && Request.Headers["Accept-Encoding"].Contains("gzip"))
+                if (AllowGzipCompression && Request.Headers.ContainsKey("Accept-Encoding") && Request.Headers["Accept-Encoding"].Contains("gzip"))
                 {
                     Headers["Content-Encoding"] = "gzip";
                 }
@@ -241,10 +243,10 @@ namespace XServer
             }
             else if (body != "")
             {
-                /*if (Request.Headers.ContainsKey("Accept-Encoding") && Request.Headers["Accept-Encoding"].Contains("gzip"))
+                if (AllowGzipCompression && Request.Headers.ContainsKey("Accept-Encoding") && Request.Headers["Accept-Encoding"].Contains("gzip"))
                 {
                     Headers["Content-Encoding"] = "gzip";
-                }*/
+                }
 
                 
                 writeBuffer = Encoding.UTF8.GetBytes(body);
@@ -258,19 +260,13 @@ namespace XServer
         {
             try
             {
-                /*if (Headers.ContainsKey("Content-Encoding") && Headers["Content-Encoding"] == "gzip")
+                if (AllowGzipCompression && Headers.ContainsKey("Content-Encoding") && Headers["Content-Encoding"] == "gzip")
                 {
-                    stream = new GZipStream(stream);
-                    
-                }*/
+                    stream = new GZipStream(stream, CompressionMode.Compress);
+                }
 
-                    stream.Write(writeBuffer, 0, writeBuffer.Length);
-                    stream.Flush();
-                
-
-                
-
-                
+                stream.Write(writeBuffer, 0, writeBuffer.Length);
+                stream.Flush();                
             }
             catch (IOException ex)
             {
@@ -289,7 +285,7 @@ namespace XServer
             }
             catch (Exception ex)
             {
-                Logger.LogWarning(ex.Message);
+                //Logger.LogWarning(ex.Message);
             }
 
             //stream.Dispose();

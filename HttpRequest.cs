@@ -105,7 +105,7 @@ namespace XServer
             }
             catch (Exception ex)
             {
-                Logger.LogError("Error parsing package \n"+ex.Message+" \n "+ex.StackTrace);
+                //Logger.LogError("Error parsing package \n"+ex.Message+" \n "+ex.StackTrace);
                 
                 return null;
             }

@@ -25,8 +25,8 @@ namespace XServer.TestApp
     {
         static void Main(string[] args)
         {
-            WebServer ws = new WebServer(8080);
-            ws.RegisterController(new ExampleController("", false));
+            WebServer ws = new WebServer(8080, false);
+            ws.RegisterController(new StaticFileController(new string[] {"{{CWD}}"}));
             ws.Start();
         }
     }

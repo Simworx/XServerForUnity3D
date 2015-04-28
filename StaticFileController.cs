@@ -22,11 +22,6 @@ namespace XServer
         public override int OnConnection(XServer.HttpRequest request, XServer.HttpResponse response)
         {
             var fileName = request.Url.LocalPath.TrimStart('/');
-            if (fileName == string.Empty)
-            {
-                fileName = "index.html";
-            }
-
             foreach (var dir in Directories)
             {
                 var path = Path.Combine(dir, fileName);

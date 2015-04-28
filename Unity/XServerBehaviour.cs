@@ -30,7 +30,7 @@ public class XServerBehaviour : MonoBehaviour {
 	void Start () {
 
 		// start the server
-		XServer.WebServer ws = new XServer.WebServer(_port);
+		XServer.WebServer ws = new XServer.WebServer(_port, false); //gzip causes trouble in Unity
         ws.RegisterController(new XServer.StaticFileController(_fileDirectories));
 		if (_deferredRegister != null) {
 			foreach (var c in _deferredRegister) {

@@ -16,11 +16,14 @@ namespace XServer
         public Dictionary<string, Controller> Controllers { get; protected set; }
 
         TcpListener _tcpListener;
-        Thread _listeningThread;        
+        Thread _listeningThread;
+        bool _allowGzipCompression = true;
 
-        public WebServer(int port)
+        public WebServer(int port, bool allowGzipCompression = true)
         {
-            Logger.Init();
+            _allowGzipCompression = allowGzipCompression;
+
+            //Logger.Init();
             Http.Init();
 
             Renderer.TemplateDirectory = Directory.GetCurrentDirectory() + "\\templates\\";
@@ -149,6 +152,7 @@ namespace XServer
                 }
 
                 var response = request.CreateRepsonse();
+                response.AllowGzipCompression = _allowGzipCompression;
 
                 int code = 500;
 
@@ -163,7 +167,7 @@ namespace XServer
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogWarning(ex.ToString());
+                    //Logger.LogWarning(ex.ToString());
                 }
 
                 if (response.RespCode == "UNKNOWN")

@@ -17,7 +17,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
+    <OutputPath>bin\Debug\Plugins\XServer\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -25,7 +25,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
+    <OutputPath>bin\Release\Plugins\XServer\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -59,12 +59,9 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>mkdir $(TargetDir)Plugins
-mkdir $(TargetDir)Plugins\XServer
-mkdir $(TargetDir)Scripts
-mkdir $(TargetDir)Scripts\XServer
-move /y $(TargetPath) $(TargetDir)Plugins\XServer\$(TargetFileName)
-echo f | xcopy $(SolutionDir)Unity\*.cs $(TargetDir)Scripts\XServer /Y /E /D</PostBuildEvent>
+    <PostBuildEvent>mkdir $(TargetDir)..\..\Scripts
+mkdir $(TargetDir)..\..\Scripts\XServer
+echo f | xcopy $(SolutionDir)Unity\*.cs $(TargetDir)..\..\Scripts\XServer /Y /E /D</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
