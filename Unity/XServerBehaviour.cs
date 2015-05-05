@@ -1,117 +1,61 @@
 ﻿using UnityEngine;
+using System.Collections;
 using System.Collections.Generic;
-using System.Threading;
 using System.IO;
+using Mustache;
 using System.Linq;
 
-public class XServerBehaviour : MonoBehaviour {
+[RequireComponent(typeof(XServerBehaviour))]
+public class ViewMasterController : MonoBehaviour {
 
-    internal class RootController : XServer.Controller
-    {
-        readonly XServer.StaticFileController _sfc = null;
-        public RootController(XServer.StaticFileController sfc)
-            : base("/", true)
-        {
-            _sfc = sfc;
-        }
-
-        public override void OnConnection(XServer.HttpRequest request, XServer.HttpResponse response)
-        {
-            var contents = _sfc.ReadFile("index.html");
-            if (contents != null)
-            {
-                response.SetBody(contents);
-            }
-            else
-            {
-                response.SetCode(404);
-            }
-        }
-    }
-
-	/// <summary>
-	/// The webserver
-	/// </summary>
-	XServer.WebServer ws = null;
-
-	/// <summary>
-	/// The location of the 'www' directory.
-	/// </summary>
-	public string[] _fileDirectories = new string[] { "{{CWD}}/Assets/WWW" };
-
-	/// <summary>
-	/// The port we want the webserver to run on.
-	/// </summary>
-	public int _port = 80;
-
-	/// <summary>
-	/// List of controllers to be registered post creation
-	/// </summary>
-	private List<XServer.Controller> _deferredRegister;
-
+	//
+	private bool _keyResetRequired = true;
+	private XServerBehaviour _webServer = null;
+	
 	// Use this for initialization
 	void Start () {
-
-        var sfc = new XServer.StaticFileController(_fileDirectories);
-        var rc = new RootController(sfc);
-
-		// start the server
-		XServer.WebServer ws = new XServer.WebServer(_port, false); //gzip causes trouble in Unity
-        ws.RegisterController(rc);
-        ws.RegisterController(sfc);
-		if (_deferredRegister != null) {
-			foreach (var c in _deferredRegister) {
-					ws.RegisterController (c);
-			}
-			_deferredRegister = null;
-		}
-		ws.Start();
-
-		//
-		Debug.Log ("Web server is now serving on port " + _port.ToString());
+		_webServer = GetComponent<XServerBehaviour> ();
+		_webServer.RegisterController (new LobbyController   (_webServer, this));
+		_webServer.RegisterController (new IMTController     (_webServer, this));
+		_webServer.RegisterController (new TheatreController (_webServer, this));
+		_webServer.RegisterController (new CommandsController(_webServer, this));
 	}
-
-	/// <summary>
-	/// Registers a controller.
-	/// </summary>
-	/// <param name="c">C.</param>
-	public void RegisterController(XServer.Controller c)
-	{
-		if (ws != null) {
-			ws.RegisterController (c);
+	
+	// Update is called once per frame
+	void Update () {
+		if (_keyResetRequired) {
+			_keyResetRequired = Input.anyKeyDown; // will set to false once all keys are released.
 		} else {
-			if(_deferredRegister == null){
-				_deferredRegister = new List<XServer.Controller>();
+			if (Input.GetKeyDown (KeyCode.Space)) {
+				OVRManager.display.RecenterPose ();
+				_keyResetRequired = true;
 			}
-			_deferredRegister.Add(c);
 		}
 	}
 
-	/// <summary>
-	/// Shutdown the webserver.
-	/// </summary>
-	public void Shutdown()
+	public ControllerContext GetWebContext()
 	{
-		if (ws != null) 
-		{
-			ws.Stop ();
-			ws = null;
-		}
+		return new ControllerContext ();
 	}
 
-	/// <summary>
-	/// Raised at the destroy event.
-	/// </summary>
-	void OnDestroy()
+	public string RenderView(ControllerContext ctx, string toRender)
 	{
-		Shutdown ();
+		var fc = new FormatCompiler();
+		fc.RegisterTag(new IncludeTag(this, ctx, _webServer.StaticFileController), true);
+		var generator = fc.Compile(toRender);
+		return generator.Render(ctx);
 	}
+}
 
-	/// <summary>
-	/// Raised at the application quit event.
-	/// </summary>
-	void OnApplicationQuit()
+public abstract class VMController : XServer.Controller
+{
+	public readonly XServerBehaviour Server;
+	public readonly ViewMasterController ViewMasterController;
+	
+	public VMController(string route, XServerBehaviour server, ViewMasterController vmc, bool exactRoute = true)
+		: base(route, exactRoute)
 	{
-		Shutdown ();
+		Server = server;
+		ViewMasterController = vmc;
 	}
 }
